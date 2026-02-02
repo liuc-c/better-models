@@ -1,0 +1,94 @@
+{
+  "common": {
+    "loading": "加载模型中...",
+    "error": "错误",
+    "lightMode": "浅色模式",
+    "darkMode": "深色模式",
+    "copy": "复制",
+    "copied": "已复制",
+    "clickToCopy": "点击复制",
+    "reset": "重置"
+  },
+  "header": {
+    "title": "Better Models",
+    "subtitle": "浏览来自 {{providerCount}} 个提供商的 {{modelCount}} 个 AI 模型"
+  },
+  "filter": {
+    "title": "筛选",
+    "description": "更快找到合适的模型",
+    "searchPlaceholder": "搜索模型...",
+    "allProviders": "全部提供商",
+    "showingResults": "显示第 {{start}}-{{end}} 个，共 {{total}} 个模型",
+    "noResults": "没有匹配的模型",
+    "sortBy": "排序方式",
+    "provider": "提供商",
+    "showResults": "显示 {{count}} 个结果"
+  },
+  "sort": {
+    "lastUpdated": "最近更新",
+    "releaseDate": "发布日期",
+    "name": "名称 (A-Z)",
+    "nameDesc": "名称 (Z-A)",
+    "contextSize": "上下文大小",
+    "inputCost": "输入成本 (低)",
+    "inputCostDesc": "输入成本 (高)",
+    "outputCost": "输出成本 (低)",
+    "outputCostDesc": "输出成本 (高)"
+  },
+  "capabilities": {
+    "reasoning": "推理",
+    "tool_call": "工具调用",
+    "structured_output": "结构化输出",
+    "attachment": "附件",
+    "open_weights": "开放权重",
+    "notSupported": "（不支持）"
+  },
+  "card": {
+    "context": "上下文",
+    "output": "输出",
+    "inputCost": "输入成本",
+    "outputCost": "输出成本",
+    "in": "输入",
+    "out": "输出",
+    "copyModelJson": "复制模型 JSON",
+    "copyModelId": "点击复制模型 ID",
+    "releaseDate": "发布日期",
+    "lastUpdated": "最后更新"
+  },
+  "detail": {
+    "basicInfo": "基本信息",
+    "modelId": "模型 ID",
+    "family": "模型系列",
+    "openWeights": "开放权重",
+    "temperature": "温度参数",
+    "yes": "是",
+    "no": "否",
+    "supported": "支持",
+    "notSupported": "不支持",
+    "dates": "日期",
+    "releaseDate": "发布日期",
+    "lastUpdated": "最后更新",
+    "knowledgeCutoff": "知识截止日期",
+    "capabilities": "能力",
+    "interleaved": "交错模式",
+    "modalities": "模态",
+    "input": "输入",
+    "tokenLimits": "Token 限制",
+    "contextWindow": "上下文窗口",
+    "maxOutput": "最大输出",
+    "pricing": "定价（每 1K tokens）",
+    "cacheRead": "缓存读取",
+    "cacheWrite": "缓存写入",
+    "provider": "提供商",
+    "name": "名称",
+    "npmPackage": "NPM 包",
+    "apiEndpoint": "API 端点",
+    "envVariables": "环境变量",
+    "documentation": "文档",
+    "rawJson": "原始 JSON"
+  },
+  "language": {
+    "en": "English",
+    "zh": "中文"
+  }
+}

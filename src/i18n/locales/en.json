@@ -1,0 +1,94 @@
+{
+  "common": {
+    "loading": "Loading models...",
+    "error": "Error",
+    "lightMode": "Light mode",
+    "darkMode": "Dark mode",
+    "copy": "Copy",
+    "copied": "Copied",
+    "clickToCopy": "Click to copy",
+    "reset": "Reset"
+  },
+  "header": {
+    "title": "Better Models",
+    "subtitle": "Browse {{modelCount}} AI models from {{providerCount}} providers"
+  },
+  "filter": {
+    "title": "Filters",
+    "description": "Refine your model search",
+    "searchPlaceholder": "Search models...",
+    "allProviders": "All Providers",
+    "showingResults": "Showing {{start}}-{{end}} of {{total}} models",
+    "noResults": "No models match your filters",
+    "sortBy": "Sort by",
+    "provider": "Provider",
+    "showResults": "Show {{count}} results"
+  },
+  "sort": {
+    "lastUpdated": "Last Updated",
+    "releaseDate": "Release Date",
+    "name": "Name (A-Z)",
+    "nameDesc": "Name (Z-A)",
+    "contextSize": "Context Size",
+    "inputCost": "Input Cost (Low)",
+    "inputCostDesc": "Input Cost (High)",
+    "outputCost": "Output Cost (Low)",
+    "outputCostDesc": "Output Cost (High)"
+  },
+  "capabilities": {
+    "reasoning": "Reasoning",
+    "tool_call": "Tool Call",
+    "structured_output": "Structured Output",
+    "attachment": "Attachment",
+    "open_weights": "Open Weights",
+    "notSupported": "(not supported)"
+  },
+  "card": {
+    "context": "Context",
+    "output": "Output",
+    "inputCost": "Input Cost",
+    "outputCost": "Output Cost",
+    "in": "In",
+    "out": "Out",
+    "copyModelJson": "Copy model JSON",
+    "copyModelId": "Click to copy model ID",
+    "releaseDate": "Release Date",
+    "lastUpdated": "Last Updated"
+  },
+  "detail": {
+    "basicInfo": "Basic Info",
+    "modelId": "Model ID",
+    "family": "Family",
+    "openWeights": "Open Weights",
+    "temperature": "Temperature",
+    "yes": "Yes",
+    "no": "No",
+    "supported": "Supported",
+    "notSupported": "Not supported",
+    "dates": "Dates",
+    "releaseDate": "Release Date",
+    "lastUpdated": "Last Updated",
+    "knowledgeCutoff": "Knowledge Cutoff",
+    "capabilities": "Capabilities",
+    "interleaved": "Interleaved",
+    "modalities": "Modalities",
+    "input": "Input",
+    "tokenLimits": "Token Limits",
+    "contextWindow": "Context Window",
+    "maxOutput": "Max Output",
+    "pricing": "Pricing (per 1K tokens)",
+    "cacheRead": "Cache Read",
+    "cacheWrite": "Cache Write",
+    "provider": "Provider",
+    "name": "Name",
+    "npmPackage": "NPM Package",
+    "apiEndpoint": "API Endpoint",
+    "envVariables": "Env Variables",
+    "documentation": "Documentation",
+    "rawJson": "Raw JSON"
+  },
+  "language": {
+    "en": "English",
+    "zh": "Chinese"
+  }
+}
