@@ -54,3 +54,14 @@ export interface FlattenedModel extends Model {
   providerDoc?: string
   providerEnv?: string[]
 }
+
+export type CapabilityKey = 'reasoning' | 'tool_call' | 'structured_output' | 'attachment' | 'open_weights'
+
+export interface UrlState {
+  search: string
+  provider: string
+  caps: CapabilityKey[]
+  sortBy: string
+  page: number
+  modelId: string | null
+}
