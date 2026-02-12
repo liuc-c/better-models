@@ -98,7 +98,7 @@ export function ModelDetailSheet({
             </div>
             {model.interleaved && (
               <div className="mt-2 text-xs text-muted-foreground">
-                {t('detail.interleaved')}: <code className="bg-muted px-1 rounded">{model.interleaved.field}</code>
+                {t('detail.interleaved')}: <code className="bg-muted px-1 rounded">{model.interleaved === true ? 'true' : model.interleaved.field}</code>
               </div>
             )}
           </div>

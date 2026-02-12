@@ -76,7 +76,7 @@
     "tokenLimits": "Token Limits",
     "contextWindow": "Context Window",
     "maxOutput": "Max Output",
-    "pricing": "Pricing (per 1K tokens)",
+    "pricing": "Pricing (per 1M tokens)",
     "cacheRead": "Cache Read",
     "cacheWrite": "Cache Write",
     "provider": "Provider",

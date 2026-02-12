@@ -1,12 +1,17 @@
 export interface ModelCost {
   input: number
   output: number
+  reasoning?: number
   cache_read?: number
   cache_write?: number
+  input_audio?: number
+  output_audio?: number
+  context_over_200k?: ModelCost
 }
 
 export interface ModelLimit {
   context: number
+  input?: number
   output: number
 }
 
@@ -23,7 +28,7 @@ export interface Model {
   reasoning?: boolean
   tool_call?: boolean
   structured_output?: boolean
-  interleaved?: { field: string }
+  interleaved?: true | { field: 'reasoning_content' | 'reasoning_details' }
   temperature?: boolean
   knowledge?: string
   release_date?: string
@@ -32,6 +37,8 @@ export interface Model {
   open_weights?: boolean
   cost?: ModelCost
   limit?: ModelLimit
+  status?: 'alpha' | 'beta' | 'deprecated'
+  provider?: { npm?: string; api?: string }
 }
 
 export interface Provider {

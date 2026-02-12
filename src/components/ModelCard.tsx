@@ -166,11 +166,11 @@ export function ModelCard({
           </div>
           <div className="bg-muted/50 rounded px-2 py-1.5">
             <div className="text-muted-foreground">{t('card.inputCost')}</div>
-            <div className="font-medium">{formatCost(model.cost?.input ?? 0)}/1K</div>
+            <div className="font-medium">{formatCost(model.cost?.input ?? 0)}/1M</div>
           </div>
           <div className="bg-muted/50 rounded px-2 py-1.5">
             <div className="text-muted-foreground">{t('card.outputCost')}</div>
-            <div className="font-medium">{formatCost(model.cost?.output ?? 0)}/1K</div>
+            <div className="font-medium">{formatCost(model.cost?.output ?? 0)}/1M</div>
           </div>
         </div>
         

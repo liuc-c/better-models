@@ -76,7 +76,7 @@
     "tokenLimits": "Token 限制",
     "contextWindow": "上下文窗口",
     "maxOutput": "最大输出",
-    "pricing": "定价（每 1K tokens）",
+    "pricing": "定价（每 1M tokens）",
     "cacheRead": "缓存读取",
     "cacheWrite": "缓存写入",
     "provider": "提供商",
