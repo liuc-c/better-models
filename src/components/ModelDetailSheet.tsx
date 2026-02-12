@@ -16,6 +16,15 @@ import { formatDate, formatTokens, formatCost } from '@/lib/utils'
 import { ModelLogo } from './ModelLogo'
 import { DetailRow } from './DetailRow'
 
+const MODEL_METADATA_KEYS = new Set([
+  'providerId',
+  'providerName',
+  'providerNpm',
+  'providerApi',
+  'providerDoc',
+  'providerEnv',
+])
+
 export function ModelDetailSheet({ 
   model, 
   open, 
@@ -30,8 +39,11 @@ export function ModelDetailSheet({
   
   const handleCopyJson = useCallback(() => {
     if (!model) return
-    const { providerId: _p, providerName: _pn, providerNpm: _npm, providerApi: _api, providerDoc: _doc, providerEnv: _env, ...modelData } = model
-    const jsonContent = JSON.stringify(modelData, null, 2)
+    const jsonContent = JSON.stringify(
+      model,
+      (key, value) => (MODEL_METADATA_KEYS.has(key) ? undefined : value),
+      2,
+    )
     const output = `"${model.id}": ${jsonContent}`
     navigator.clipboard.writeText(output)
     setCopied(true)
@@ -40,8 +52,11 @@ export function ModelDetailSheet({
   
   if (!model) return null
   
-  const { providerId: _p, providerName: _pn, providerNpm: _npm, providerApi: _api, providerDoc: _doc, providerEnv: _env, ...modelData } = model
-  const jsonContent = JSON.stringify(modelData, null, 2)
+  const jsonContent = JSON.stringify(
+    model,
+    (key, value) => (MODEL_METADATA_KEYS.has(key) ? undefined : value),
+    2,
+  )
   const jsonOutput = `"${model.id}": ${jsonContent}`
   
   return (

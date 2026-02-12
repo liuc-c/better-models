@@ -39,6 +39,19 @@ import { ModelDetailSheet } from '@/components/ModelDetailSheet'
 import { Pagination } from '@/components/Pagination'
 import { MobileFilterSheet } from '@/components/MobileFilterSheet'
 
+function readSessionCache(): ApiResponse | null {
+  if (typeof window === 'undefined') return null
+  const cached = sessionStorage.getItem(SESSION_CACHE_KEY)
+  if (!cached) return null
+
+  try {
+    return JSON.parse(cached) as ApiResponse
+  } catch {
+    sessionStorage.removeItem(SESSION_CACHE_KEY)
+    return null
+  }
+}
+
 export default function App() {
   const { t, i18n } = useTranslation()
 
@@ -47,8 +60,10 @@ export default function App() {
     return parseUrlStateFromSearch(window.location.search)
   }, [])
 
-  const [data, setData] = useState<ApiResponse | null>(null)
-  const [loading, setLoading] = useState(true)
+  const initialCachedData = useMemo(() => readSessionCache(), [])
+
+  const [data, setData] = useState<ApiResponse | null>(initialCachedData)
+  const [loading, setLoading] = useState(() => initialCachedData === null)
   const [error, setError] = useState<string | null>(null)
 
   const [isDark, setIsDark] = useState(() => {
@@ -69,11 +84,9 @@ export default function App() {
 
   const [currentPage, setCurrentPage] = useState(() => initialUrlState.page)
 
-  const [selectedModel, setSelectedModel] = useState<FlattenedModel | null>(null)
-  const [sheetOpen, setSheetOpen] = useState(false)
+  const [selectedModelId, setSelectedModelId] = useState<string | null>(() => initialUrlState.modelId)
+  const [sheetOpen, setSheetOpen] = useState(() => initialUrlState.modelId !== null)
   const [mobileFiltersOpen, setMobileFiltersOpen] = useState(false)
-
-  const [requestedModelId, setRequestedModelId] = useState<string | null>(() => initialUrlState.modelId)
   const searchInputRef = useRef<HTMLInputElement | null>(null)
   const skipNextUrlWriteRef = useRef(false)
   const lastUrlStateRef = useRef<UrlState | null>(null)
@@ -95,16 +108,7 @@ export default function App() {
   }, [])
 
   useEffect(() => {
-    const cached = sessionStorage.getItem(SESSION_CACHE_KEY)
-    if (cached) {
-      try {
-        setData(JSON.parse(cached))
-        setLoading(false)
-        return
-      } catch {
-        sessionStorage.removeItem(SESSION_CACHE_KEY)
-      }
-    }
+    if (data) return
 
     fetch(API_URL)
       .then((res) => {
@@ -124,17 +128,16 @@ export default function App() {
         setError(err.message)
         setLoading(false)
       })
-  }, [])
+  }, [data])
 
   const providers = useMemo(() => {
     if (!data) return []
     return extractProviders(data)
   }, [data])
 
-  useEffect(() => {
-    if (selectedProvider === 'all') return
-    const exists = providers.some((p) => p.id === selectedProvider)
-    if (!exists) setSelectedProvider('all')
+  const effectiveSelectedProvider = useMemo(() => {
+    if (selectedProvider === 'all') return 'all'
+    return providers.some((p) => p.id === selectedProvider) ? selectedProvider : 'all'
   }, [providers, selectedProvider])
 
   const allModels = useMemo(() => {
@@ -162,29 +165,20 @@ export default function App() {
     return Array.from(items).sort((a, b) => a.localeCompare(b))
   }, [allModels])
 
-  useEffect(() => {
-    const validInputs = inputModalities.filter(m => selectedInputModality.includes(m))
-    if (validInputs.length !== selectedInputModality.length) {
-      setSelectedInputModality(validInputs)
-    }
-  }, [inputModalities, selectedInputModality])
+  const effectiveSelectedInputModality = useMemo(
+    () => selectedInputModality.filter((m) => inputModalities.includes(m)),
+    [selectedInputModality, inputModalities],
+  )
 
-  useEffect(() => {
-    const validOutputs = outputModalities.filter(m => selectedOutputModality.includes(m))
-    if (validOutputs.length !== selectedOutputModality.length) {
-      setSelectedOutputModality(validOutputs)
-    }
-  }, [outputModalities, selectedOutputModality])
+  const effectiveSelectedOutputModality = useMemo(
+    () => selectedOutputModality.filter((m) => outputModalities.includes(m)),
+    [selectedOutputModality, outputModalities],
+  )
 
-  useEffect(() => {
-    if (!requestedModelId) return
-    const found = allModels.find((m) => m.id === requestedModelId) || null
-    if (found) {
-      setSelectedModel(found)
-      setSheetOpen(true)
-    }
-    setRequestedModelId(null)
-  }, [allModels, requestedModelId])
+  const selectedModel = useMemo(
+    () => allModels.find((m) => m.id === selectedModelId) || null,
+    [allModels, selectedModelId],
+  )
 
   const filteredModels = useMemo(() => {
     const result = allModels.filter((model) => {
@@ -198,7 +192,7 @@ export default function App() {
         if (!matchesSearch) return false
       }
 
-      if (selectedProvider !== 'all' && model.providerId !== selectedProvider) {
+      if (effectiveSelectedProvider !== 'all' && model.providerId !== effectiveSelectedProvider) {
         return false
       }
 
@@ -207,13 +201,13 @@ export default function App() {
         if (!hasAllCapabilities) return false
       }
 
-      if (selectedInputModality.length > 0) {
-        const supportsInput = selectedInputModality.every(m => model.modalities?.input?.includes(m))
+      if (effectiveSelectedInputModality.length > 0) {
+        const supportsInput = effectiveSelectedInputModality.every(m => model.modalities?.input?.includes(m))
         if (!supportsInput) return false
       }
 
-      if (selectedOutputModality.length > 0) {
-        const supportsOutput = selectedOutputModality.every(m => model.modalities?.output?.includes(m))
+      if (effectiveSelectedOutputModality.length > 0) {
+        const supportsOutput = effectiveSelectedOutputModality.every(m => model.modalities?.output?.includes(m))
         if (!supportsOutput) return false
       }
 
@@ -246,22 +240,15 @@ export default function App() {
     })
 
     return result
-  }, [allModels, search, selectedProvider, selectedCapabilities, selectedInputModality, selectedOutputModality, sortBy])
+  }, [allModels, search, effectiveSelectedProvider, selectedCapabilities, effectiveSelectedInputModality, effectiveSelectedOutputModality, sortBy])
 
-  const totalPages = Math.ceil(filteredModels.length / PAGE_SIZE)
-
-  useEffect(() => {
-    if (totalPages <= 1) {
-      if (currentPage !== 1) setCurrentPage(1)
-      return
-    }
-    if (currentPage > totalPages) setCurrentPage(totalPages)
-  }, [currentPage, totalPages])
+  const totalPages = Math.max(1, Math.ceil(filteredModels.length / PAGE_SIZE))
+  const activePage = Math.min(currentPage, totalPages)
 
   const paginatedModels = useMemo(() => {
-    const start = (currentPage - 1) * PAGE_SIZE
+    const start = (activePage - 1) * PAGE_SIZE
     return filteredModels.slice(start, start + PAGE_SIZE)
-  }, [filteredModels, currentPage])
+  }, [filteredModels, activePage])
 
   const toggleCapability = useCallback((cap: CapabilityKey) => {
     setCurrentPage(1)
@@ -318,32 +305,32 @@ export default function App() {
   const hasActiveFilters =
     search.trim().length > 0 ||
     selectedCapabilities.length > 0 ||
-    selectedProvider !== 'all' ||
-    selectedInputModality.length > 0 ||
-    selectedOutputModality.length > 0 ||
+    effectiveSelectedProvider !== 'all' ||
+    effectiveSelectedInputModality.length > 0 ||
+    effectiveSelectedOutputModality.length > 0 ||
     sortBy !== 'lastUpdated'
 
-  const handleCopy = useCallback((_model: FlattenedModel) => {
+  const handleCopy = useCallback(() => {
     // Could add toast notification here
   }, [])
 
   const handleViewDetails = useCallback((model: FlattenedModel) => {
-    setSelectedModel(model)
+    setSelectedModelId(model.id)
     setSheetOpen(true)
   }, [])
 
   const handleSheetOpenChange = useCallback((open: boolean) => {
     setSheetOpen(open)
     if (!open) {
-      setSelectedModel(null)
-      setRequestedModelId(null)
+      setSelectedModelId(null)
     }
   }, [])
 
   const handlePageChange = useCallback((page: number) => {
-    setCurrentPage(page)
+    const nextPage = Math.max(1, Math.min(page, totalPages))
+    setCurrentPage(nextPage)
     window.scrollTo({ top: 0, behavior: 'smooth' })
-  }, [])
+  }, [totalPages])
 
   useEffect(() => {
     if (typeof window === 'undefined') return
@@ -358,11 +345,12 @@ export default function App() {
       setSelectedOutputModality(next.outputModality)
       setSortBy(next.sortBy)
       setCurrentPage(next.page)
-      setRequestedModelId(next.modelId)
+      setSelectedModelId(next.modelId)
 
       if (!next.modelId) {
-        setSelectedModel(null)
         setSheetOpen(false)
+      } else {
+        setSheetOpen(true)
       }
     }
 
@@ -376,12 +364,12 @@ export default function App() {
       skipNextUrlWriteRef.current = false
       lastUrlStateRef.current = {
         search,
-        provider: selectedProvider,
+        provider: effectiveSelectedProvider,
         caps: selectedCapabilities,
-        inputModality: selectedInputModality,
-        outputModality: selectedOutputModality,
+        inputModality: effectiveSelectedInputModality,
+        outputModality: effectiveSelectedOutputModality,
         sortBy,
-        page: currentPage,
+        page: activePage,
         modelId: sheetOpen && selectedModel ? selectedModel.id : null,
       }
       return
@@ -393,12 +381,12 @@ export default function App() {
 
     const nextState: UrlState = {
       search,
-      provider: selectedProvider,
+      provider: effectiveSelectedProvider,
       caps: capsInStableOrder,
-      inputModality: selectedInputModality,
-      outputModality: selectedOutputModality,
+      inputModality: effectiveSelectedInputModality,
+      outputModality: effectiveSelectedOutputModality,
       sortBy,
-      page: currentPage,
+      page: activePage,
       modelId: sheetOpen && selectedModel ? selectedModel.id : null,
     }
 
@@ -421,12 +409,12 @@ export default function App() {
     lastUrlStateRef.current = nextState
   }, [
     search,
-    selectedProvider,
+    effectiveSelectedProvider,
     selectedCapabilities,
-    selectedInputModality,
-    selectedOutputModality,
+    effectiveSelectedInputModality,
+    effectiveSelectedOutputModality,
     sortBy,
-    currentPage,
+    activePage,
     sheetOpen,
     selectedModel,
   ])

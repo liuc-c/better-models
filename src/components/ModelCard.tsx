@@ -10,6 +10,15 @@ import { CAPABILITIES } from '@/constants'
 import { getModalityIcon, formatTokens, formatCost } from '@/lib/utils'
 import { ModelLogo } from './ModelLogo'
 
+const MODEL_METADATA_KEYS = new Set([
+  'providerId',
+  'providerName',
+  'providerNpm',
+  'providerApi',
+  'providerDoc',
+  'providerEnv',
+])
+
 export function ModelCard({ 
   model, 
   onCopy,
@@ -26,8 +35,11 @@ export function ModelCard({
   
   const handleCopy = useCallback((e: React.MouseEvent) => {
     e.stopPropagation()
-    const { providerId: _p, providerName: _pn, providerNpm: _npm, providerApi: _api, providerDoc: _doc, providerEnv: _env, ...modelData } = model
-    const jsonContent = JSON.stringify(modelData, null, 2)
+    const jsonContent = JSON.stringify(
+      model,
+      (key, value) => (MODEL_METADATA_KEYS.has(key) ? undefined : value),
+      2,
+    )
     const output = `"${model.id}": ${jsonContent}`
     navigator.clipboard.writeText(output)
     setCopied(true)
