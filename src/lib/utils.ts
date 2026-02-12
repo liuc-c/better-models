@@ -111,8 +111,8 @@ export function flattenModels(data: ApiResponse): FlattenedModel[] {
         ...model,
         providerId,
         providerName: provider.name,
-        providerNpm: provider.npm,
-        providerApi: provider.api,
+        providerNpm: model.provider?.npm ?? provider.npm,
+        providerApi: model.provider?.api ?? provider.api,
         providerDoc: provider.doc,
         providerEnv: provider.env,
       })

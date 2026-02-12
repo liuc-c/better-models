@@ -215,7 +215,7 @@ Parallel Speedup: ~35%
 
 ---
 
-- [ ] 2. 扁平化逻辑支持 model-level provider override（修复 provider 展示偏差）
+- [x] 2. 扁平化逻辑支持 model-level provider override（修复 provider 展示偏差）
 
   **What to do**:
   - 在 `flattenModels` 中为 provider 元数据建立优先级：`model.provider` > provider-level
@@ -351,7 +351,7 @@ Parallel Speedup: ~35%
 
 ---
 
-- [ ] 4. 详情页补齐缺失字段展示（成本、token 限制、interleaved）
+- [x] 4. 详情页补齐缺失字段展示（成本、token 限制、interleaved）
 
   **What to do**:
   - 在 `ModelDetailSheet` 中条件展示：
@@ -427,7 +427,7 @@ Parallel Speedup: ~35%
 
 ---
 
-- [ ] 5. 状态字段可视化（alpha/beta/deprecated）
+- [x] 5. 状态字段可视化（alpha/beta/deprecated）
 
   **What to do**:
   - 在卡片与详情页增加状态 badge（仅当 `status` 存在）
