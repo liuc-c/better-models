@@ -53,7 +53,12 @@
     "copyModelJson": "Copy model JSON",
     "copyModelId": "Click to copy model ID",
     "releaseDate": "Release Date",
-    "lastUpdated": "Last Updated"
+    "lastUpdated": "Last Updated",
+    "status": {
+      "alpha": "Alpha",
+      "beta": "Beta",
+      "deprecated": "Deprecated"
+    }
   },
   "detail": {
     "basicInfo": "Basic Info",
@@ -76,7 +81,12 @@
     "tokenLimits": "Token Limits",
     "contextWindow": "Context Window",
     "maxOutput": "Max Output",
+    "maxInput": "Max Input",
     "pricing": "Pricing (per 1M tokens)",
+    "reasoningPrice": "Reasoning",
+    "audioInput": "Audio Input",
+    "audioOutput": "Audio Output",
+    "contextOver200k": "Context > 200k",
     "cacheRead": "Cache Read",
     "cacheWrite": "Cache Write",
     "provider": "Provider",

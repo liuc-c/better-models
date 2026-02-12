@@ -2,6 +2,7 @@ import { useState, useCallback } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardAction } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
+import { Badge } from '@/components/ui/badge'
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
 import { Copy, Check, Package, Rocket, RefreshCw } from 'lucide-react'
 import type { FlattenedModel } from '@/types'
@@ -59,7 +60,22 @@ export function ModelCard({
         <div className="flex items-start gap-3">
           <ModelLogo model={model} className="size-10 rounded shrink-0" />
           <div className="min-w-0 flex-1">
-            <CardTitle className="text-base truncate">{model.name}</CardTitle>
+            <div className="flex items-center gap-2">
+              <CardTitle className="text-base truncate">{model.name}</CardTitle>
+              {model.status && (
+                <Badge 
+                  variant={model.status === 'deprecated' ? 'destructive' : 'secondary'}
+                  className={`
+                    h-5 px-1.5 text-[10px] uppercase tracking-wider font-bold
+                    ${model.status === 'alpha' ? 'bg-orange-500/15 text-orange-600 dark:text-orange-400 hover:bg-orange-500/25 border-orange-200 dark:border-orange-800' : ''}
+                    ${model.status === 'beta' ? 'bg-blue-500/15 text-blue-600 dark:text-blue-400 hover:bg-blue-500/25 border-blue-200 dark:border-blue-800' : ''}
+                    ${model.status === 'deprecated' ? 'opacity-80' : ''}
+                  `}
+                >
+                  {t(`card.status.${model.status}`)}
+                </Badge>
+              )}
+            </div>
             <CardDescription className="text-xs mt-1 flex items-center gap-1">
               <span>{model.providerName}</span>
               {model.providerNpm && (

@@ -8,6 +8,7 @@ import {
   SheetDescription,
 } from '@/components/ui/sheet'
 import { Button } from '@/components/ui/button'
+import { Badge } from '@/components/ui/badge'
 import { Copy, Check, Info, Calendar, Sparkles, Package, ExternalLink } from 'lucide-react'
 import type { FlattenedModel } from '@/types'
 import { CAPABILITIES } from '@/constants'
@@ -50,7 +51,22 @@ export function ModelDetailSheet({
           <div className="flex items-center gap-3">
             <ModelLogo model={model} className="size-12 rounded" />
             <div>
-              <SheetTitle>{model.name}</SheetTitle>
+              <div className="flex items-center gap-2">
+                <SheetTitle>{model.name}</SheetTitle>
+                {model.status && (
+                  <Badge 
+                    variant={model.status === 'deprecated' ? 'destructive' : 'secondary'}
+                    className={`
+                      h-5 px-1.5 text-[10px] uppercase tracking-wider font-bold
+                      ${model.status === 'alpha' ? 'bg-orange-500/15 text-orange-600 dark:text-orange-400 hover:bg-orange-500/25 border-orange-200 dark:border-orange-800' : ''}
+                      ${model.status === 'beta' ? 'bg-blue-500/15 text-blue-600 dark:text-blue-400 hover:bg-blue-500/25 border-blue-200 dark:border-blue-800' : ''}
+                      ${model.status === 'deprecated' ? 'opacity-80' : ''}
+                    `}
+                  >
+                    {t(`card.status.${model.status}`)}
+                  </Badge>
+                )}
+              </div>
               <SheetDescription>{model.providerName}</SheetDescription>
             </div>
           </div>
@@ -98,7 +114,7 @@ export function ModelDetailSheet({
             </div>
             {model.interleaved && (
               <div className="mt-2 text-xs text-muted-foreground">
-                {t('detail.interleaved')}: <code className="bg-muted px-1 rounded">{model.interleaved === true ? 'true' : model.interleaved.field}</code>
+                {t('detail.interleaved')}: <code className="bg-muted px-1 rounded">{model.interleaved === true ? t('detail.supported') : model.interleaved.field}</code>
               </div>
             )}
           </div>
@@ -123,6 +139,9 @@ export function ModelDetailSheet({
             <h4 className="text-sm font-medium mb-2">{t('detail.tokenLimits')}</h4>
             <div className="bg-muted/30 rounded-lg px-3">
               <DetailRow label={t('detail.contextWindow')} value={formatTokens(model.limit?.context ?? 0)} />
+              {model.limit?.input !== undefined && (
+                <DetailRow label={t('detail.maxInput')} value={formatTokens(model.limit.input)} />
+              )}
               <DetailRow label={t('detail.maxOutput')} value={formatTokens(model.limit?.output ?? 0)} />
             </div>
           </div>
@@ -132,11 +151,27 @@ export function ModelDetailSheet({
             <div className="bg-muted/30 rounded-lg px-3">
               <DetailRow label={t('detail.input')} value={formatCost(model.cost?.input ?? 0)} />
               <DetailRow label={t('card.output')} value={formatCost(model.cost?.output ?? 0)} />
+              {model.cost?.reasoning !== undefined && (
+                <DetailRow label={t('detail.reasoningPrice')} value={formatCost(model.cost.reasoning)} />
+              )}
+              {model.cost?.input_audio !== undefined && (
+                <DetailRow label={t('detail.audioInput')} value={formatCost(model.cost.input_audio)} />
+              )}
+              {model.cost?.output_audio !== undefined && (
+                <DetailRow label={t('detail.audioOutput')} value={formatCost(model.cost.output_audio)} />
+              )}
               {model.cost?.cache_read !== undefined && (
                 <DetailRow label={t('detail.cacheRead')} value={formatCost(model.cost.cache_read)} />
               )}
               {model.cost?.cache_write !== undefined && (
                 <DetailRow label={t('detail.cacheWrite')} value={formatCost(model.cost.cache_write)} />
+              )}
+              {model.cost?.context_over_200k && (
+                <div className="mt-2 pt-2 border-t border-border/50">
+                  <div className="text-xs text-muted-foreground mb-1">{t('detail.contextOver200k')}</div>
+                  <DetailRow label={t('detail.input')} value={formatCost(model.cost.context_over_200k.input)} />
+                  <DetailRow label={t('card.output')} value={formatCost(model.cost.context_over_200k.output)} />
+                </div>
               )}
             </div>
           </div>

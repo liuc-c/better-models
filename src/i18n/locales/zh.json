@@ -53,7 +53,12 @@
     "copyModelJson": "复制模型 JSON",
     "copyModelId": "点击复制模型 ID",
     "releaseDate": "发布日期",
-    "lastUpdated": "最后更新"
+    "lastUpdated": "最后更新",
+    "status": {
+      "alpha": "Alpha",
+      "beta": "Beta",
+      "deprecated": "已弃用"
+    }
   },
   "detail": {
     "basicInfo": "基本信息",
@@ -76,7 +81,12 @@
     "tokenLimits": "Token 限制",
     "contextWindow": "上下文窗口",
     "maxOutput": "最大输出",
+    "maxInput": "最大输入",
     "pricing": "定价（每 1M tokens）",
+    "reasoningPrice": "推理",
+    "audioInput": "音频输入",
+    "audioOutput": "音频输出",
+    "contextOver200k": "上下文 > 200k",
     "cacheRead": "缓存读取",
     "cacheWrite": "缓存写入",
     "provider": "提供商",
