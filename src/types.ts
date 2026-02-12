@@ -68,6 +68,8 @@ export interface UrlState {
   search: string
   provider: string
   caps: CapabilityKey[]
+  inputModality: string[]
+  outputModality: string[]
   sortBy: string
   page: number
   modelId: string | null

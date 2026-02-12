@@ -22,6 +22,10 @@
     "noResults": "No models match your filters",
     "sortBy": "Sort by",
     "provider": "Provider",
+    "inputType": "Input",
+    "outputType": "Output",
+    "allInputs": "All Inputs",
+    "allOutputs": "All Outputs",
     "showResults": "Show {{count}} results"
   },
   "sort": {

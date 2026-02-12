@@ -14,10 +14,11 @@ import {
   SelectValue,
 } from '@/components/ui/select'
 import { Button } from '@/components/ui/button'
-import { Check } from 'lucide-react'
 import type { CapabilityKey } from '@/types'
 import { CAPABILITIES } from '@/constants'
 import { ProviderLogo } from './ModelLogo'
+
+import { getModalityIcon } from '@/lib/utils'
 
 export function MobileFilterSheet({
   open,
@@ -29,6 +30,12 @@ export function MobileFilterSheet({
   onSortChange,
   selectedCapabilities,
   onCapabilityToggle,
+  selectedInputModality,
+  selectedOutputModality,
+  onInputModalityChange,
+  onOutputModalityChange,
+  inputModalities,
+  outputModalities,
   resultCount,
   onReset,
   hasActiveFilters,
@@ -42,6 +49,12 @@ export function MobileFilterSheet({
   onSortChange: (sort: string) => void
   selectedCapabilities: CapabilityKey[]
   onCapabilityToggle: (cap: CapabilityKey) => void
+  selectedInputModality: string[]
+  selectedOutputModality: string[]
+  onInputModalityChange: (modality: string) => void
+  onOutputModalityChange: (modality: string) => void
+  inputModalities: string[]
+  outputModalities: string[]
   resultCount: number
   onReset: () => void
   hasActiveFilters: boolean
@@ -98,8 +111,62 @@ export function MobileFilterSheet({
           </div>
 
           <div className="space-y-3">
+            <div className="text-sm font-medium">{t('filter.inputType', 'Input')}</div>
+            <div className="flex flex-wrap gap-2">
+              {inputModalities.map((modality) => {
+                const Icon = getModalityIcon(modality)
+                const isSelected = selectedInputModality.includes(modality)
+                return (
+                  <button
+                    key={modality}
+                    type="button"
+                    onClick={() => onInputModalityChange(modality)}
+                    className={`
+                      inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm font-medium border transition-colors
+                      ${isSelected 
+                        ? 'bg-primary text-primary-foreground border-primary' 
+                        : 'bg-background text-muted-foreground border-border hover:bg-muted hover:text-foreground'
+                      }
+                    `}
+                  >
+                    <Icon className="size-4" />
+                    {modality}
+                  </button>
+                )
+              })}
+            </div>
+          </div>
+
+          <div className="space-y-3">
+            <div className="text-sm font-medium">{t('filter.outputType', 'Output')}</div>
+            <div className="flex flex-wrap gap-2">
+              {outputModalities.map((modality) => {
+                const Icon = getModalityIcon(modality)
+                const isSelected = selectedOutputModality.includes(modality)
+                return (
+                  <button
+                    key={modality}
+                    type="button"
+                    onClick={() => onOutputModalityChange(modality)}
+                    className={`
+                      inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm font-medium border transition-colors
+                      ${isSelected 
+                        ? 'bg-primary text-primary-foreground border-primary' 
+                        : 'bg-background text-muted-foreground border-border hover:bg-muted hover:text-foreground'
+                      }
+                    `}
+                  >
+                    <Icon className="size-4" />
+                    {modality}
+                  </button>
+                )
+              })}
+            </div>
+          </div>
+
+          <div className="space-y-3">
             <div className="text-sm font-medium">{t('detail.capabilities', 'Capabilities')}</div>
-            <div className="grid grid-cols-1 gap-3">
+            <div className="flex flex-wrap gap-2">
               {CAPABILITIES.map(({ key, icon: Icon }) => {
                 const isSelected = selectedCapabilities.includes(key)
                 return (
@@ -107,21 +174,17 @@ export function MobileFilterSheet({
                     key={key}
                     type="button"
                     onClick={() => onCapabilityToggle(key)}
-                    className={`flex items-center justify-between p-4 rounded-lg border transition-all ${
-                      isSelected 
-                        ? 'border-primary bg-primary/5 ring-1 ring-primary/20' 
-                        : 'border-border hover:bg-muted/50'
-                    }`}
+                    aria-pressed={isSelected}
+                    className={`
+                      inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm font-medium border transition-colors
+                      ${isSelected
+                        ? 'bg-primary text-primary-foreground border-primary' 
+                        : 'bg-background text-muted-foreground border-border hover:bg-muted hover:text-foreground'
+                      }
+                    `}
                   >
-                    <div className="flex items-center gap-3">
-                      <div className={`p-2 rounded-md ${isSelected ? 'bg-primary text-primary-foreground' : 'bg-muted text-muted-foreground'}`}>
-                        <Icon className="size-5" />
-                      </div>
-                      <span className={`font-medium ${isSelected ? 'text-foreground' : 'text-muted-foreground'}`}>
-                        {t(`capabilities.${key}`)}
-                      </span>
-                    </div>
-                    {isSelected && <Check className="size-5 text-primary" />}
+                    <Icon className="size-4" aria-hidden="true" />
+                    {t(`capabilities.${key}`)}
                   </button>
                 )
               })}

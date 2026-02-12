@@ -22,6 +22,10 @@
     "noResults": "没有匹配的模型",
     "sortBy": "排序方式",
     "provider": "提供商",
+    "inputType": "输入",
+    "outputType": "输出",
+    "allInputs": "全部输入",
+    "allOutputs": "全部输出",
     "showResults": "显示 {{count}} 个结果"
   },
   "sort": {

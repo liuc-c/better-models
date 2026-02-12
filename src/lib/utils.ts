@@ -20,6 +20,16 @@ export function parseUrlStateFromSearch(search: string): UrlState {
 
   const q = params.get(URL_KEYS.search) ?? DEFAULT_URL_STATE.search
   const provider = params.get(URL_KEYS.provider) ?? DEFAULT_URL_STATE.provider
+  const inputModalityRaw = params.get(URL_KEYS.inputModality)
+  const inputModality = inputModalityRaw
+    ? inputModalityRaw.split(',').map((v) => v.trim()).filter(Boolean)
+    : []
+
+  const outputModalityRaw = params.get(URL_KEYS.outputModality)
+  const outputModality = outputModalityRaw
+    ? outputModalityRaw.split(',').map((v) => v.trim()).filter(Boolean)
+    : []
+
   const sortBy = params.get(URL_KEYS.sort) ?? DEFAULT_URL_STATE.sortBy
   const page = parsePageNumber(params.get(URL_KEYS.page))
   const modelId = params.get(URL_KEYS.model)
@@ -37,6 +47,8 @@ export function parseUrlStateFromSearch(search: string): UrlState {
     search: q,
     provider,
     caps: capsFromUrl,
+    inputModality,
+    outputModality,
     sortBy: SORT_KEYS.has(sortBy) ? sortBy : DEFAULT_URL_STATE.sortBy,
     page,
     modelId: modelId || null,
@@ -49,6 +61,8 @@ export function buildUrlSearchFromState(state: UrlState): string {
   if (state.search.trim()) params.set(URL_KEYS.search, state.search.trim())
   if (state.provider !== DEFAULT_URL_STATE.provider) params.set(URL_KEYS.provider, state.provider)
   if (state.caps.length > 0) params.set(URL_KEYS.caps, state.caps.join(','))
+  if (state.inputModality.length > 0) params.set(URL_KEYS.inputModality, state.inputModality.join(','))
+  if (state.outputModality.length > 0) params.set(URL_KEYS.outputModality, state.outputModality.join(','))
   if (state.sortBy !== DEFAULT_URL_STATE.sortBy) params.set(URL_KEYS.sort, state.sortBy)
   if (state.page !== DEFAULT_URL_STATE.page) params.set(URL_KEYS.page, String(state.page))
   if (state.modelId) params.set(URL_KEYS.model, state.modelId)
