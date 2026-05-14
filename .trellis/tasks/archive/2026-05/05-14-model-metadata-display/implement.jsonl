@@ -1,0 +1,5 @@
+{"file": ".trellis/spec/frontend/component-guidelines.md", "reason": "Component structure, accessibility, i18n, and UI primitive conventions for the metadata display changes."}
+{"file": ".trellis/spec/frontend/state-management.md", "reason": "App-owned data and derived-state conventions for models.dev response handling."}
+{"file": ".trellis/spec/frontend/type-safety.md", "reason": "Type contract guidance for expanding models.dev API shapes without any/broad assertions."}
+{"file": ".trellis/spec/frontend/quality-guidelines.md", "reason": "Required lint/build checks and frontend review checklist."}
+{"file": ".trellis/spec/frontend/directory-structure.md", "reason": "Placement guidance for constants, utilities, types, and feature components."}

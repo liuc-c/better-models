@@ -1,0 +1,4 @@
+{"file": ".trellis/spec/frontend/component-guidelines.md", "reason": "Review component accessibility, i18n, and local style patterns."}
+{"file": ".trellis/spec/frontend/state-management.md", "reason": "Verify data remains derived and app state stays centralized."}
+{"file": ".trellis/spec/frontend/type-safety.md", "reason": "Verify API shape additions remain strict and typed."}
+{"file": ".trellis/spec/frontend/quality-guidelines.md", "reason": "Run and interpret lint/build quality gates."}
