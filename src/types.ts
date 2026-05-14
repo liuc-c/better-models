@@ -1,3 +1,23 @@
+export type JsonPrimitive = string | number | boolean | null
+export type JsonValue = JsonPrimitive | JsonValue[] | { [key: string]: JsonValue }
+
+export interface ModelCostFields {
+  input?: number
+  output?: number
+  reasoning?: number
+  cache_read?: number
+  cache_write?: number
+  input_audio?: number
+  output_audio?: number
+}
+
+export interface ModelCostTier extends ModelCostFields {
+  tier?: {
+    type?: string
+    size?: number
+  }
+}
+
 export interface ModelCost {
   input: number
   output: number
@@ -7,6 +27,7 @@ export interface ModelCost {
   input_audio?: number
   output_audio?: number
   context_over_200k?: ModelCost
+  tiers?: ModelCostTier[]
 }
 
 export interface ModelLimit {
@@ -20,10 +41,27 @@ export interface ModelModalities {
   output: string[]
 }
 
+export interface ModelProviderOverride {
+  npm?: string
+  api?: string
+  shape?: string
+  body?: { [key: string]: JsonValue }
+  headers?: Record<string, string>
+}
+
+export interface ModelExperimentalMode {
+  cost?: ModelCostFields
+  provider?: ModelProviderOverride
+}
+
+export interface ModelExperimental {
+  modes?: Record<string, ModelExperimentalMode>
+}
+
 export interface Model {
   id: string
   name: string
-  family: string
+  family?: string
   attachment?: boolean
   reasoning?: boolean
   tool_call?: boolean
@@ -38,7 +76,8 @@ export interface Model {
   cost?: ModelCost
   limit?: ModelLimit
   status?: 'alpha' | 'beta' | 'deprecated'
-  provider?: { npm?: string; api?: string }
+  provider?: ModelProviderOverride
+  experimental?: ModelExperimental
 }
 
 export interface Provider {
@@ -64,13 +103,20 @@ export interface FlattenedModel extends Model {
 
 export type CapabilityKey = 'reasoning' | 'tool_call' | 'structured_output' | 'attachment' | 'open_weights'
 
+export interface SelectedModelIdentity {
+  modelId: string
+  providerId: string | null
+}
+
 export interface UrlState {
   search: string
   provider: string
+  family: string
   caps: CapabilityKey[]
   inputModality: string[]
   outputModality: string[]
   sortBy: string
   page: number
   modelId: string | null
+  modelProviderId: string | null
 }

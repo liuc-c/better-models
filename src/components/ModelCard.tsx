@@ -1,23 +1,14 @@
 import { useState, useCallback } from 'react'
 import { useTranslation } from 'react-i18next'
-import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardAction } from '@/components/ui/card'
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
 import { Copy, Check, Package, Rocket, RefreshCw } from 'lucide-react'
 import type { FlattenedModel } from '@/types'
 import { CAPABILITIES } from '@/constants'
-import { getModalityIcon, formatTokens, formatCost } from '@/lib/utils'
-import { ModelLogo } from './ModelLogo'
-
-const MODEL_METADATA_KEYS = new Set([
-  'providerId',
-  'providerName',
-  'providerNpm',
-  'providerApi',
-  'providerDoc',
-  'providerEnv',
-])
+import { getModalityIcon, formatTokens, formatCostPerMillion, stringifyModelDefinition } from '@/lib/utils'
+import { ModelFamilyIcon, ModelLogo } from './ModelLogo'
 
 export function ModelCard({ 
   model, 
@@ -32,16 +23,11 @@ export function ModelCard({
   const [copied, setCopied] = useState(false)
   const [npmCopied, setNpmCopied] = useState(false)
   const [idCopied, setIdCopied] = useState(false)
+  const costLabels = { free: t('common.free'), unknown: t('common.unknown') }
   
   const handleCopy = useCallback((e: React.MouseEvent) => {
     e.stopPropagation()
-    const jsonContent = JSON.stringify(
-      model,
-      (key, value) => (MODEL_METADATA_KEYS.has(key) ? undefined : value),
-      2,
-    )
-    const output = `"${model.id}": ${jsonContent}`
-    navigator.clipboard.writeText(output)
+    navigator.clipboard.writeText(stringifyModelDefinition(model))
     setCopied(true)
     onCopy(model)
     setTimeout(() => setCopied(false), 2000)
@@ -72,8 +58,11 @@ export function ModelCard({
         <div className="flex items-start gap-3">
           <ModelLogo model={model} className="size-10 rounded shrink-0" />
           <div className="min-w-0 flex-1">
-            <div className="flex items-center gap-2">
-              <CardTitle className="text-base truncate">{model.name}</CardTitle>
+            <div className="flex items-center gap-2 min-w-0">
+              <div className="flex min-w-0 flex-1 items-center gap-1.5">
+                <ModelFamilyIcon model={model} className="size-[1em] shrink-0" />
+                <CardTitle className="text-base truncate">{model.name}</CardTitle>
+              </div>
               {model.status && (
                 <Badge 
                   variant={model.status === 'deprecated' ? 'destructive' : 'secondary'}
@@ -116,7 +105,7 @@ export function ModelCard({
               {model.family && <span>• {model.family}</span>}
             </CardDescription>
           </div>
-          <CardAction>
+          <div className="shrink-0">
             <Tooltip>
               <TooltipTrigger asChild>
                 <Button 
@@ -130,7 +119,7 @@ export function ModelCard({
               </TooltipTrigger>
               <TooltipContent>{t('card.copyModelJson')}</TooltipContent>
             </Tooltip>
-          </CardAction>
+          </div>
         </div>
       </CardHeader>
       <CardContent className="pt-0 space-y-3">
@@ -194,11 +183,11 @@ export function ModelCard({
           </div>
           <div className="bg-muted/50 rounded px-2 py-1.5">
             <div className="text-muted-foreground">{t('card.inputCost')}</div>
-            <div className="font-medium">{formatCost(model.cost?.input ?? 0)}/1M</div>
+            <div className="font-medium">{formatCostPerMillion(model.cost?.input, costLabels)}</div>
           </div>
           <div className="bg-muted/50 rounded px-2 py-1.5">
             <div className="text-muted-foreground">{t('card.outputCost')}</div>
-            <div className="font-medium">{formatCost(model.cost?.output ?? 0)}/1M</div>
+            <div className="font-medium">{formatCostPerMillion(model.cost?.output, costLabels)}</div>
           </div>
         </div>
         

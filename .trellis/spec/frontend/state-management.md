@@ -29,7 +29,9 @@ The main state categories are:
 const [data, setData] = useState<ApiResponse | null>(initialCachedData)
 const [search, setSearch] = useState(() => initialUrlState.search)
 const [selectedCapabilities, setSelectedCapabilities] = useState<CapabilityKey[]>(() => initialUrlState.caps)
-const [selectedModelId, setSelectedModelId] = useState<string | null>(() => initialUrlState.modelId)
+const [selectedModelIdentity, setSelectedModelIdentity] = useState<SelectedModelIdentity | null>(
+  () => selectedModelIdentityFromUrlState(initialUrlState),
+)
 const [sheetOpen, setSheetOpen] = useState(() => initialUrlState.modelId !== null)
 ```
 
@@ -55,15 +57,21 @@ Use `useMemo` for derived collections and expensive filters/sorts. Do not duplic
 
 ```tsx
 // src/App.tsx
-const selectedModel = useMemo(
-  () => allModels.find((m) => m.id === selectedModelId) || null,
-  [allModels, selectedModelId],
-)
+const selectedModel = useMemo(() => {
+  if (!selectedModelIdentity) return null
+  return allModels.find(
+    (m) => m.id === selectedModelIdentity.modelId && m.providerId === selectedModelIdentity.providerId,
+  ) || null
+}, [allModels, selectedModelIdentity])
 ```
 
 ### URL state
 
 Filter state, page, sort, and selected model can be restored from the URL. Use the `UrlState` helpers instead of manually reading/writing query params in components.
+
+Selected model identity must include both `modelId` and `modelProviderId`. `models.dev` model ids are reused across providers, so detail sheets, deep links, and back/forward navigation must resolve the selected model by `(providerId, modelId)`. Legacy URLs with only `model` may fall back to the active provider filter first, then the first matching model id, but new URLs should write both values.
+
+Provider and family filters both use URL state. Family options are derived from flattened `model.family` values, sorted with icon-matched families first, and invalid URL values should be normalized through an `effectiveSelectedFamily` derived value rather than mutating state during render.
 
 ---
 
@@ -129,8 +137,9 @@ export function flattenModels(data: ApiResponse): FlattenedModel[] {
 ## Common Mistakes
 
 - Do not keep filtered/sorted/paginated model arrays in state; derive them from `data` and filter state.
-- Do not let selected filter values point at unavailable provider/modality options. The app uses `effectiveSelectedProvider`, `effectiveSelectedInputModality`, and `effectiveSelectedOutputModality`.
+- Do not let selected filter values point at unavailable provider/family/modality options. The app uses `effectiveSelectedProvider`, `effectiveSelectedFamily`, `effectiveSelectedInputModality`, and `effectiveSelectedOutputModality`.
 - Do not forget to reset `currentPage` when filters or sort order change.
 - Do not write URL params in several handlers. Keep URL serialization centralized through `UrlState`.
+- Do not use `model.id` alone as selected-model state. Use provider id plus model id so duplicate ids across providers do not open mismatched detail sheets.
 - Do not use `currentPage` directly for rendering when it may exceed `totalPages`; use the clamped `activePage`.
 - Do not promote copy button feedback, image load failures, or mobile sheet open state into app/global state unless another component truly depends on it.

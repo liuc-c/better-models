@@ -37,17 +37,28 @@ export interface FlattenedModel extends Model {
 
 export type CapabilityKey = 'reasoning' | 'tool_call' | 'structured_output' | 'attachment' | 'open_weights'
 
+export interface SelectedModelIdentity {
+  modelId: string
+  providerId: string | null
+}
+
 export interface UrlState {
   search: string
   provider: string
+  family: string
   caps: CapabilityKey[]
   inputModality: string[]
   outputModality: string[]
   sortBy: string
   page: number
   modelId: string | null
+  modelProviderId: string | null
 }
 ```
+
+`modelId` is not globally unique in `models.dev`. URL contracts must carry `modelProviderId` with `modelId` whenever a specific card/detail target is persisted, and app state should keep that pair together as `SelectedModelIdentity`.
+
+`family` is a filter value from `model.family`, not a model identity. It should default to `'all'` and be normalized against the derived family list in `App.tsx`.
 
 Use inline prop types for small components and shared types for domain payloads:
 
@@ -109,7 +120,7 @@ Current type patterns:
 - Use `import type` for type-only imports:
 
 ```ts
-import type { ApiResponse, FlattenedModel, CapabilityKey, UrlState } from '@/types'
+import type { ApiResponse, FlattenedModel, CapabilityKey, UrlState, SelectedModelIdentity } from '@/types'
 ```
 
 - Use `as const` for constant objects/arrays that should preserve literal values:
@@ -132,7 +143,9 @@ export const URL_KEYS = {
 - Use nullable state explicitly when a value can be absent:
 
 ```tsx
-const [selectedModelId, setSelectedModelId] = useState<string | null>(() => initialUrlState.modelId)
+const [selectedModelIdentity, setSelectedModelIdentity] = useState<SelectedModelIdentity | null>(
+  () => selectedModelIdentityFromUrlState(initialUrlState),
+)
 ```
 
 - Use optional chaining and nullish coalescing for optional API fields:

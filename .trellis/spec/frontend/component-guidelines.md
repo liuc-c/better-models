@@ -115,7 +115,7 @@ UI primitives use the local `cn` helper, and variant-heavy primitives use `class
 className={cn(buttonVariants({ variant, size, className }))}
 ```
 
-Icons come from `lucide-react`; size them with Tailwind `size-*` utilities. Use `getModalityIcon` from `src/lib/utils.ts` when rendering modality icons so the mapping stays centralized.
+Icons come from `lucide-react`; size them with Tailwind `size-*` utilities. Use `getModalityIcon` from `src/lib/utils.ts` when rendering modality icons so the mapping stays centralized. Provider and model-family brand icons are rendered through `ModelLogo.tsx`; model-family icons must use the curated Lobe model mapping and render nothing when unmatched, not a provider fallback.
 
 ---
 

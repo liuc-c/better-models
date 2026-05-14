@@ -16,7 +16,7 @@ import {
 import { Button } from '@/components/ui/button'
 import type { CapabilityKey } from '@/types'
 import { CAPABILITIES } from '@/constants'
-import { ProviderLogo } from './ModelLogo'
+import { FamilyCombobox, ProviderCombobox } from './ProviderCombobox'
 
 import { getModalityIcon } from '@/lib/utils'
 
@@ -26,6 +26,9 @@ export function MobileFilterSheet({
   selectedProvider,
   onProviderChange,
   providers,
+  selectedFamily,
+  onFamilyChange,
+  families,
   sortBy,
   onSortChange,
   selectedCapabilities,
@@ -45,6 +48,9 @@ export function MobileFilterSheet({
   selectedProvider: string
   onProviderChange: (provider: string) => void
   providers: { id: string; name: string }[]
+  selectedFamily: string
+  onFamilyChange: (family: string) => void
+  families: string[]
   sortBy: string
   onSortChange: (sort: string) => void
   selectedCapabilities: CapabilityKey[]
@@ -72,22 +78,22 @@ export function MobileFilterSheet({
         <div className="overflow-y-auto flex-1 px-6 py-6 space-y-8">
           <div className="space-y-3">
             <div className="text-sm font-medium">{t('filter.provider', 'Provider')}</div>
-            <Select value={selectedProvider} onValueChange={onProviderChange}>
-              <SelectTrigger className="w-full h-12">
-                <SelectValue placeholder={t('filter.allProviders')} />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all" className="h-10">{t('filter.allProviders')}</SelectItem>
-                {providers.map((p) => (
-                  <SelectItem key={p.id} value={p.id} className="h-10">
-                    <div className="flex items-center gap-2">
-                      <ProviderLogo providerId={p.id} className="size-5" />
-                      {p.name}
-                    </div>
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+            <ProviderCombobox
+              value={selectedProvider}
+              onValueChange={onProviderChange}
+              providers={providers}
+              triggerClassName="h-12"
+            />
+          </div>
+
+          <div className="space-y-3">
+            <div className="text-sm font-medium">{t('filter.family', 'Family')}</div>
+            <FamilyCombobox
+              value={selectedFamily}
+              onValueChange={onFamilyChange}
+              families={families}
+              triggerClassName="h-12"
+            />
           </div>
 
           <div className="space-y-3">

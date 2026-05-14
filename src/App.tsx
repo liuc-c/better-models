@@ -15,11 +15,13 @@ import {
   Moon,
   Sun,
   Languages,
-  Filter
+  Filter,
+  ExternalLink
 } from 'lucide-react'
-import type { ApiResponse, FlattenedModel, CapabilityKey, UrlState } from '@/types'
+import type { ApiResponse, FlattenedModel, CapabilityKey, UrlState, SelectedModelIdentity } from '@/types'
 import {
   API_URL,
+  MODELS_DEV_REPO_URL,
   PAGE_SIZE,
   SESSION_CACHE_KEY,
   CAPABILITIES,
@@ -30,14 +32,16 @@ import {
   buildUrlSearchFromState,
   shouldIgnoreKeydownTarget,
   flattenModels,
+  extractFamilies,
   extractProviders,
-  getModalityIcon
+  getModalityIcon,
+  compareOptionalCost
 } from '@/lib/utils'
-import { ProviderLogo } from '@/components/ModelLogo'
 import { ModelCard } from '@/components/ModelCard'
 import { ModelDetailSheet } from '@/components/ModelDetailSheet'
 import { Pagination } from '@/components/Pagination'
 import { MobileFilterSheet } from '@/components/MobileFilterSheet'
+import { FamilyCombobox, ProviderCombobox } from '@/components/ProviderCombobox'
 
 function readSessionCache(): ApiResponse | null {
   if (typeof window === 'undefined') return null
@@ -49,6 +53,14 @@ function readSessionCache(): ApiResponse | null {
   } catch {
     sessionStorage.removeItem(SESSION_CACHE_KEY)
     return null
+  }
+}
+
+function selectedModelIdentityFromUrlState(state: UrlState): SelectedModelIdentity | null {
+  if (!state.modelId) return null
+  return {
+    modelId: state.modelId,
+    providerId: state.modelProviderId,
   }
 }
 
@@ -77,6 +89,7 @@ export default function App() {
 
   const [search, setSearch] = useState(() => initialUrlState.search)
   const [selectedProvider, setSelectedProvider] = useState<string>(() => initialUrlState.provider)
+  const [selectedFamily, setSelectedFamily] = useState<string>(() => initialUrlState.family)
   const [selectedCapabilities, setSelectedCapabilities] = useState<CapabilityKey[]>(() => initialUrlState.caps)
   const [selectedInputModality, setSelectedInputModality] = useState<string[]>(() => initialUrlState.inputModality)
   const [selectedOutputModality, setSelectedOutputModality] = useState<string[]>(() => initialUrlState.outputModality)
@@ -84,7 +97,9 @@ export default function App() {
 
   const [currentPage, setCurrentPage] = useState(() => initialUrlState.page)
 
-  const [selectedModelId, setSelectedModelId] = useState<string | null>(() => initialUrlState.modelId)
+  const [selectedModelIdentity, setSelectedModelIdentity] = useState<SelectedModelIdentity | null>(
+    () => selectedModelIdentityFromUrlState(initialUrlState),
+  )
   const [sheetOpen, setSheetOpen] = useState(() => initialUrlState.modelId !== null)
   const [mobileFiltersOpen, setMobileFiltersOpen] = useState(false)
   const searchInputRef = useRef<HTMLInputElement | null>(null)
@@ -145,6 +160,13 @@ export default function App() {
     return flattenModels(data)
   }, [data])
 
+  const families = useMemo(() => extractFamilies(allModels), [allModels])
+
+  const effectiveSelectedFamily = useMemo(() => {
+    if (selectedFamily === 'all') return 'all'
+    return families.includes(selectedFamily) ? selectedFamily : 'all'
+  }, [families, selectedFamily])
+
   const inputModalities = useMemo(() => {
     const items = new Set<string>()
     for (const model of allModels) {
@@ -175,10 +197,23 @@ export default function App() {
     [selectedOutputModality, outputModalities],
   )
 
-  const selectedModel = useMemo(
-    () => allModels.find((m) => m.id === selectedModelId) || null,
-    [allModels, selectedModelId],
-  )
+  const selectedModel = useMemo(() => {
+    if (!selectedModelIdentity) return null
+    const { modelId, providerId } = selectedModelIdentity
+
+    if (providerId) {
+      return allModels.find((m) => m.id === modelId && m.providerId === providerId) || null
+    }
+
+    if (effectiveSelectedProvider !== 'all') {
+      const providerScopedMatch = allModels.find(
+        (m) => m.id === modelId && m.providerId === effectiveSelectedProvider,
+      )
+      if (providerScopedMatch) return providerScopedMatch
+    }
+
+    return allModels.find((m) => m.id === modelId) || null
+  }, [allModels, selectedModelIdentity, effectiveSelectedProvider])
 
   const filteredModels = useMemo(() => {
     const result = allModels.filter((model) => {
@@ -193,6 +228,10 @@ export default function App() {
       }
 
       if (effectiveSelectedProvider !== 'all' && model.providerId !== effectiveSelectedProvider) {
+        return false
+      }
+
+      if (effectiveSelectedFamily !== 'all' && model.family !== effectiveSelectedFamily) {
         return false
       }
 
@@ -227,20 +266,20 @@ export default function App() {
         case 'contextSize':
           return (b.limit?.context ?? 0) - (a.limit?.context ?? 0)
         case 'inputCost':
-          return (a.cost?.input ?? Infinity) - (b.cost?.input ?? Infinity)
+          return compareOptionalCost(a.cost?.input, b.cost?.input, 'asc')
         case 'inputCostDesc':
-          return (b.cost?.input ?? 0) - (a.cost?.input ?? 0)
+          return compareOptionalCost(a.cost?.input, b.cost?.input, 'desc')
         case 'outputCost':
-          return (a.cost?.output ?? Infinity) - (b.cost?.output ?? Infinity)
+          return compareOptionalCost(a.cost?.output, b.cost?.output, 'asc')
         case 'outputCostDesc':
-          return (b.cost?.output ?? 0) - (a.cost?.output ?? 0)
+          return compareOptionalCost(a.cost?.output, b.cost?.output, 'desc')
         default:
           return 0
       }
     })
 
     return result
-  }, [allModels, search, effectiveSelectedProvider, selectedCapabilities, effectiveSelectedInputModality, effectiveSelectedOutputModality, sortBy])
+  }, [allModels, search, effectiveSelectedProvider, effectiveSelectedFamily, selectedCapabilities, effectiveSelectedInputModality, effectiveSelectedOutputModality, sortBy])
 
   const totalPages = Math.max(1, Math.ceil(filteredModels.length / PAGE_SIZE))
   const activePage = Math.min(currentPage, totalPages)
@@ -261,6 +300,11 @@ export default function App() {
 
   const handleProviderChange = useCallback((provider: string) => {
     setSelectedProvider(provider)
+    setCurrentPage(1)
+  }, [])
+
+  const handleFamilyChange = useCallback((family: string) => {
+    setSelectedFamily(family)
     setCurrentPage(1)
   }, [])
 
@@ -295,6 +339,7 @@ export default function App() {
   const resetFilters = useCallback(() => {
     setSearch('')
     setSelectedProvider('all')
+    setSelectedFamily('all')
     setSelectedCapabilities([])
     setSelectedInputModality([])
     setSelectedOutputModality([])
@@ -306,6 +351,7 @@ export default function App() {
     search.trim().length > 0 ||
     selectedCapabilities.length > 0 ||
     effectiveSelectedProvider !== 'all' ||
+    effectiveSelectedFamily !== 'all' ||
     effectiveSelectedInputModality.length > 0 ||
     effectiveSelectedOutputModality.length > 0 ||
     sortBy !== 'lastUpdated'
@@ -315,14 +361,17 @@ export default function App() {
   }, [])
 
   const handleViewDetails = useCallback((model: FlattenedModel) => {
-    setSelectedModelId(model.id)
+    setSelectedModelIdentity({
+      modelId: model.id,
+      providerId: model.providerId,
+    })
     setSheetOpen(true)
   }, [])
 
   const handleSheetOpenChange = useCallback((open: boolean) => {
     setSheetOpen(open)
     if (!open) {
-      setSelectedModelId(null)
+      setSelectedModelIdentity(null)
     }
   }, [])
 
@@ -340,12 +389,13 @@ export default function App() {
       const next = parseUrlStateFromSearch(window.location.search)
       setSearch(next.search)
       setSelectedProvider(next.provider)
+      setSelectedFamily(next.family)
       setSelectedCapabilities(next.caps)
       setSelectedInputModality(next.inputModality)
       setSelectedOutputModality(next.outputModality)
       setSortBy(next.sortBy)
       setCurrentPage(next.page)
-      setSelectedModelId(next.modelId)
+      setSelectedModelIdentity(selectedModelIdentityFromUrlState(next))
 
       if (!next.modelId) {
         setSheetOpen(false)
@@ -365,12 +415,14 @@ export default function App() {
       lastUrlStateRef.current = {
         search,
         provider: effectiveSelectedProvider,
+        family: effectiveSelectedFamily,
         caps: selectedCapabilities,
         inputModality: effectiveSelectedInputModality,
         outputModality: effectiveSelectedOutputModality,
         sortBy,
         page: activePage,
-        modelId: sheetOpen && selectedModel ? selectedModel.id : null,
+        modelId: sheetOpen ? selectedModelIdentity?.modelId ?? null : null,
+        modelProviderId: sheetOpen ? selectedModel?.providerId ?? selectedModelIdentity?.providerId ?? null : null,
       }
       return
     }
@@ -382,12 +434,14 @@ export default function App() {
     const nextState: UrlState = {
       search,
       provider: effectiveSelectedProvider,
+      family: effectiveSelectedFamily,
       caps: capsInStableOrder,
       inputModality: effectiveSelectedInputModality,
       outputModality: effectiveSelectedOutputModality,
       sortBy,
       page: activePage,
-      modelId: sheetOpen && selectedModel ? selectedModel.id : null,
+      modelId: sheetOpen ? selectedModelIdentity?.modelId ?? null : null,
+      modelProviderId: sheetOpen ? selectedModel?.providerId ?? selectedModelIdentity?.providerId ?? null : null,
     }
 
     const nextSearch = buildUrlSearchFromState(nextState)
@@ -410,6 +464,7 @@ export default function App() {
   }, [
     search,
     effectiveSelectedProvider,
+    effectiveSelectedFamily,
     selectedCapabilities,
     effectiveSelectedInputModality,
     effectiveSelectedOutputModality,
@@ -417,6 +472,7 @@ export default function App() {
     activePage,
     sheetOpen,
     selectedModel,
+    selectedModelIdentity,
   ])
 
   useEffect(() => {
@@ -477,14 +533,25 @@ export default function App() {
   return (
     <div className="min-h-screen bg-background pb-[env(safe-area-inset-bottom)]">
       <div className="max-w-7xl mx-auto px-4 py-6 sm:py-8">
-        <header className="mb-6 sm:mb-8 flex items-start justify-between">
-          <div>
-            <h1 className="text-2xl sm:text-3xl font-bold tracking-tight">{t('header.title')}</h1>
+        <header className="mb-6 sm:mb-8 flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+          <div className="min-w-0">
+            <div className="flex flex-wrap items-center gap-2">
+              <h1 className="text-2xl sm:text-3xl font-bold tracking-tight">{t('header.title')}</h1>
+              <a
+                href={MODELS_DEV_REPO_URL}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-1 rounded-md border bg-background px-2 py-1 text-xs font-medium text-muted-foreground transition-colors hover:text-foreground"
+              >
+                {t('header.dataSource')}
+                <ExternalLink className="size-3" aria-hidden="true" />
+              </a>
+            </div>
             <p className="text-muted-foreground mt-1">
               {t('header.subtitle', { modelCount: allModels.length, providerCount: providers.length })}
             </p>
           </div>
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 self-start">
             <Select value={i18n.language} onValueChange={(lang) => {
               i18n.changeLanguage(lang)
               localStorage.setItem('language', lang)
@@ -554,22 +621,19 @@ export default function App() {
               </div>
 
               <div className="flex items-center gap-3">
-                <Select value={selectedProvider} onValueChange={handleProviderChange}>
-                  <SelectTrigger className="w-48">
-                    <SelectValue placeholder={t('filter.allProviders')} />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">{t('filter.allProviders')}</SelectItem>
-                    {providers.map((p) => (
-                      <SelectItem key={p.id} value={p.id}>
-                        <div className="flex items-center gap-2">
-                          <ProviderLogo providerId={p.id} className="size-4" />
-                          {p.name}
-                        </div>
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+                <ProviderCombobox
+                  value={selectedProvider}
+                  onValueChange={handleProviderChange}
+                  providers={providers}
+                  className="w-48"
+                />
+
+                <FamilyCombobox
+                  value={selectedFamily}
+                  onValueChange={handleFamilyChange}
+                  families={families}
+                  className="w-48"
+                />
 
                 <Select value={sortBy} onValueChange={handleSortChange}>
                   <SelectTrigger className="w-44">
@@ -719,6 +783,9 @@ export default function App() {
         selectedProvider={selectedProvider}
         onProviderChange={handleProviderChange}
         providers={providers}
+        selectedFamily={selectedFamily}
+        onFamilyChange={handleFamilyChange}
+        families={families}
         sortBy={sortBy}
         onSortChange={handleSortChange}
         selectedCapabilities={selectedCapabilities}
