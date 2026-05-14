@@ -536,6 +536,12 @@ export default function App() {
         <header className="mb-6 sm:mb-8 flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
           <div className="min-w-0">
             <div className="flex flex-wrap items-center gap-2">
+              <img
+                src="/better-models-icon.png"
+                alt=""
+                aria-hidden="true"
+                className="size-9 shrink-0 rounded-lg border border-border object-cover sm:size-10"
+              />
               <h1 className="text-2xl sm:text-3xl font-bold tracking-tight">{t('header.title')}</h1>
               <a
                 href={MODELS_DEV_REPO_URL}
