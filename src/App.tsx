@@ -42,6 +42,7 @@ import { ModelDetailSheet } from '@/components/ModelDetailSheet'
 import { Pagination } from '@/components/Pagination'
 import { MobileFilterSheet } from '@/components/MobileFilterSheet'
 import { FamilyCombobox, ProviderCombobox } from '@/components/ProviderCombobox'
+import { Analytics } from '@vercel/analytics/react'
 
 function readSessionCache(): ApiResponse | null {
   if (typeof window === 'undefined') return null
@@ -806,6 +807,7 @@ export default function App() {
         onReset={resetFilters}
         hasActiveFilters={hasActiveFilters}
       />
+      <Analytics />
     </div>
   )
 }
